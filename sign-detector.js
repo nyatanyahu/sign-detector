@@ -6,12 +6,20 @@ register('packetReceived', (packet, event) => {
     }
 });
 
+function print(text) {
+    // call rendersystem from rendering thread
+    Client.scheduleTask(() => ChatLib.chat(text));
+}
+
 function analyzeSignPackets(packet) {
     let field = packet.class.getDeclaredField('field_12039');
 
     field.setAccessible(true);
 
     let nbt = field.get(packet);
+
+    // only parse if it's a sign
+    if (nbt.get('id') != '"Sign"') return;
 
     // xyz
     let x = parseInt(nbt.get('x'));
@@ -36,23 +44,23 @@ function analyzeSignPackets(packet) {
         hasText = true;
     }
 
-    ChatLib.chat('&8[&6sign-detect&8] &8-----------------------------------------');
+    print('&8[&6sign-detect&8] &8-----------------------------------------');
 
     if (hasText == true) {
-        ChatLib.chat(`&8[&6sign-detect&8] &6Sign edited at &a(${x}, ${y}, ${z})!`);
+        print(`&8[&6sign-detect&8] &6Sign edited at &a(${x}, ${y}, ${z})!`);
         
         notifySignText(parsedMessages);
-    } else ChatLib.chat(`&8[&6sign-detect&8] &6Sign placed at &a(${x}, ${y}, ${z})!`);
+    } else print(`&8[&6sign-detect&8] &6Sign placed at &a(${x}, ${y}, ${z})!`);
     
     let { possiblePlayers, likelyPlayers } = predictPlayer(x, y, z);
 
-    ChatLib.chat(`&8[&6sign-detect&8] &6Possible players: &a${JSON.stringify(possiblePlayers)}`);
-    ChatLib.chat(`&8[&6sign-detect&8] &6Likely players: &a${JSON.stringify(likelyPlayers)}`);
-    ChatLib.chat('&8[&6sign-detect&8] &8-----------------------------------------');
+    print(`&8[&6sign-detect&8] &6Possible players: &a${JSON.stringify(possiblePlayers)}`);
+    print(`&8[&6sign-detect&8] &6Likely players: &a${JSON.stringify(likelyPlayers)}`);
+    print('&8[&6sign-detect&8] &8-----------------------------------------');
 }
 
 function notifySignText(messages) {
-    for (let i = 0; i < messages.length; i++) ChatLib.chat(`&8[&6sign-detect&8] &6Line ${i + 1}: &r${messages[i]}`);
+    for (let i = 0; i < messages.length; i++) print(`&8[&6sign-detect&8] &6Line ${i + 1}: &r${messages[i]}`);
 }
 
 const YAW_THRESHOLD = 10;
@@ -117,7 +125,7 @@ function predictPlayer(x, y, z) {
 
         possiblePlayers.push(name);
 
-        // ChatLib.chat(`Player: ${name}, yawDiff: ${minYawDiff}, pitchDiff: ${minPitchDiff}, dist: ${minDist}`);
+        // print(`Player: ${name}, yawDiff: ${minYawDiff}, pitchDiff: ${minPitchDiff}, dist: ${minDist}`);
 
         if (minYawDiff > YAW_THRESHOLD || minPitchDiff > PITCH_THRESHOLD) continue;
 
