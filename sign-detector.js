@@ -41,7 +41,7 @@ function analyzeSignPackets(packet) {
         }
 
         let text = message.get('extra')[0].get('text').toString().slice(1, -1);
-        let remaining = (15 - text.length) / 2;
+        let remaining = (45 - text.length) / 2;
 
         text = `${' '.repeat(Math.floor(remaining))}${text}${' '.repeat(Math.ceil(remaining))}`;
 
